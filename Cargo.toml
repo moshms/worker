@@ -1,0 +1,30 @@
+[package]
+name = "mc-worker"
+description = "Background worker for Music Cloud: scans, imports and tag writes"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/moshms/worker"
+
+[dependencies]
+anyhow = "1"
+axum = "0.8"
+bytes = "1"
+figment = { version = "0.10", features = ["env"] }
+metrics = "0.24"
+notify = "8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "signal", "time", "fs", "io-util", "sync", "process"] }
+tracing = "0.1"
+uuid = { version = "1", features = ["v7", "serde"] }
+
+mc-core = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.1.0" }
+mc-crypto = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.1.0" }
+mc-db = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.1.0" }
+mc-jobs = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.1.0" }
+mc-media = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.1.0" }
+mc-runtime = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.1.0" }
+mc-scanner = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.1.0" }
+mc-storage = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.1.0" }
+mc-telemetry = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.1.0", features = ["metrics"] }
