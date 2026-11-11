@@ -1,7 +1,8 @@
 # syntax=docker/dockerfile:1
 
 FROM rust:1-alpine AS chef
-RUN apk add --no-cache gcc musl-dev git
+RUN apk add --no-cache gcc musl-dev git openssh-client \
+    && ssh-keyscan github.com >> /etc/ssh/ssh_known_hosts 2>/dev/null
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 RUN cargo install cargo-chef --locked --version 0.1.78
 WORKDIR /app
@@ -18,13 +19,13 @@ RUN case "$TARGETARCH" in \
         *) echo "unsupported architecture: $TARGETARCH" >&2; exit 1 ;; \
     esac
 COPY --from=planner /app/recipe.json recipe.json
-RUN --mount=type=secret,id=core_token,required=false \
+RUN --mount=type=ssh --mount=type=secret,id=core_token,required=false \
     if [ -f /run/secrets/core_token ]; then \
         git config --global url."https://x-access-token:$(cat /run/secrets/core_token)@github.com/moshms/core.git".insteadOf "ssh://git@github.com/moshms/core.git"; \
     fi && \
     cargo chef cook --release --target "$(cat /rust-target)" --recipe-path recipe.json
 COPY . .
-RUN --mount=type=secret,id=core_token,required=false \
+RUN --mount=type=ssh --mount=type=secret,id=core_token,required=false \
     if [ -f /run/secrets/core_token ]; then \
         git config --global url."https://x-access-token:$(cat /run/secrets/core_token)@github.com/moshms/core.git".insteadOf "ssh://git@github.com/moshms/core.git"; \
     fi && \
