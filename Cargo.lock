@@ -34,6 +34,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
+name = "android_system_properties"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ae221649c9976a6f6c56ae1facf410f3ddb33cc661c4b7b61020a912d4237fbc"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "anyhow"
 version = "1.0.104"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -321,6 +330,20 @@ dependencies = [
  "chacha20",
  "cipher",
  "poly1305",
+]
+
+[[package]]
+name = "chrono"
+version = "0.4.45"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1aa79e62e7697b8e29b513a68abacf485adcd1fe8284a4316c5ae868e6633327"
+dependencies = [
+ "iana-time-zone",
+ "js-sys",
+ "num-traits",
+ "serde",
+ "wasm-bindgen",
+ "windows-link 0.2.1",
 ]
 
 [[package]]
@@ -843,7 +866,7 @@ dependencies = [
  "libc",
  "log",
  "rustversion",
- "windows-core",
+ "windows-core 0.100.0",
  "windows-sys 0.61.2",
 ]
 
@@ -1132,6 +1155,30 @@ dependencies = [
  "tokio",
  "tower-service",
  "tracing",
+]
+
+[[package]]
+name = "iana-time-zone"
+version = "0.1.65"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e31bc9ad994ba00e440a8aa5c9ef0ec67d5cb5e5cb0cc7f8b744a35b389cc470"
+dependencies = [
+ "android_system_properties",
+ "core-foundation-sys",
+ "iana-time-zone-haiku",
+ "js-sys",
+ "log",
+ "wasm-bindgen",
+ "windows-core 0.62.2",
+]
+
+[[package]]
+name = "iana-time-zone-haiku"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f31827a206f56af32e590ba56d5d2d085f558508192593743f16b2306495269f"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
@@ -1571,7 +1618,7 @@ checksum = "47e1ffaa40ddd1f3ed91f717a33c8c0ee23fff369e3aa8772b9605cc1d22f4c3"
 [[package]]
 name = "mc-core"
 version = "0.1.0"
-source = "git+ssh://git@github.com/moshms/core.git?tag=v0.1.1#909c3c328420f7c99420d42013a68441a106746a"
+source = "git+ssh://git@github.com/moshms/core.git?tag=v0.2.0#aefadff6eddb2bfac707657176ae3c6d94b8073b"
 dependencies = [
  "serde",
  "thiserror",
@@ -1581,7 +1628,7 @@ dependencies = [
 [[package]]
 name = "mc-crypto"
 version = "0.1.0"
-source = "git+ssh://git@github.com/moshms/core.git?tag=v0.1.1#909c3c328420f7c99420d42013a68441a106746a"
+source = "git+ssh://git@github.com/moshms/core.git?tag=v0.2.0#aefadff6eddb2bfac707657176ae3c6d94b8073b"
 dependencies = [
  "base64 0.23.1",
  "chacha20poly1305",
@@ -1593,8 +1640,9 @@ dependencies = [
 [[package]]
 name = "mc-db"
 version = "0.1.0"
-source = "git+ssh://git@github.com/moshms/core.git?tag=v0.1.1#909c3c328420f7c99420d42013a68441a106746a"
+source = "git+ssh://git@github.com/moshms/core.git?tag=v0.2.0#aefadff6eddb2bfac707657176ae3c6d94b8073b"
 dependencies = [
+ "chrono",
  "mc-core",
  "serde",
  "serde_json",
@@ -1606,7 +1654,7 @@ dependencies = [
 [[package]]
 name = "mc-jobs"
 version = "0.1.0"
-source = "git+ssh://git@github.com/moshms/core.git?tag=v0.1.1#909c3c328420f7c99420d42013a68441a106746a"
+source = "git+ssh://git@github.com/moshms/core.git?tag=v0.2.0#aefadff6eddb2bfac707657176ae3c6d94b8073b"
 dependencies = [
  "mc-core",
  "mc-db",
@@ -1619,7 +1667,7 @@ dependencies = [
 [[package]]
 name = "mc-media"
 version = "0.1.0"
-source = "git+ssh://git@github.com/moshms/core.git?tag=v0.1.1#909c3c328420f7c99420d42013a68441a106746a"
+source = "git+ssh://git@github.com/moshms/core.git?tag=v0.2.0#aefadff6eddb2bfac707657176ae3c6d94b8073b"
 dependencies = [
  "blake3",
  "lofty",
@@ -1630,7 +1678,7 @@ dependencies = [
 [[package]]
 name = "mc-runtime"
 version = "0.1.0"
-source = "git+ssh://git@github.com/moshms/core.git?tag=v0.1.1#909c3c328420f7c99420d42013a68441a106746a"
+source = "git+ssh://git@github.com/moshms/core.git?tag=v0.2.0#aefadff6eddb2bfac707657176ae3c6d94b8073b"
 dependencies = [
  "mc-core",
  "mc-crypto",
@@ -1644,7 +1692,7 @@ dependencies = [
 [[package]]
 name = "mc-scanner"
 version = "0.1.0"
-source = "git+ssh://git@github.com/moshms/core.git?tag=v0.1.1#909c3c328420f7c99420d42013a68441a106746a"
+source = "git+ssh://git@github.com/moshms/core.git?tag=v0.2.0#aefadff6eddb2bfac707657176ae3c6d94b8073b"
 dependencies = [
  "blake3",
  "futures-util",
@@ -1661,7 +1709,7 @@ dependencies = [
 [[package]]
 name = "mc-storage"
 version = "0.1.0"
-source = "git+ssh://git@github.com/moshms/core.git?tag=v0.1.1#909c3c328420f7c99420d42013a68441a106746a"
+source = "git+ssh://git@github.com/moshms/core.git?tag=v0.2.0#aefadff6eddb2bfac707657176ae3c6d94b8073b"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -1678,7 +1726,7 @@ dependencies = [
 [[package]]
 name = "mc-telemetry"
 version = "0.1.0"
-source = "git+ssh://git@github.com/moshms/core.git?tag=v0.1.1#909c3c328420f7c99420d42013a68441a106746a"
+source = "git+ssh://git@github.com/moshms/core.git?tag=v0.2.0#aefadff6eddb2bfac707657176ae3c6d94b8073b"
 dependencies = [
  "async-trait",
  "axum",
@@ -2957,6 +3005,7 @@ checksum = "ee6798b1838b6a0f69c007c133b8df5866302197e404e8b6ee8ed3e3a5e68dc6"
 dependencies = [
  "base64 0.22.1",
  "bytes",
+ "chrono",
  "crc",
  "crossbeam-queue",
  "either",
@@ -3033,6 +3082,7 @@ dependencies = [
  "bitflags",
  "byteorder",
  "bytes",
+ "chrono",
  "crc",
  "digest 0.10.7",
  "dotenvy",
@@ -3075,6 +3125,7 @@ dependencies = [
  "base64 0.22.1",
  "bitflags",
  "byteorder",
+ "chrono",
  "crc",
  "dotenvy",
  "etcetera",
@@ -3110,6 +3161,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2d12fe70b2c1b4401038055f90f151b78208de1f9f89a7dbfd41587a10c3eea"
 dependencies = [
  "atoi",
+ "chrono",
  "flume",
  "futures-channel",
  "futures-core",
@@ -3731,15 +3783,39 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 
 [[package]]
 name = "windows-core"
+version = "0.62.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b8e83a14d34d0623b51dce9581199302a221863196a1dde71a7663a4c2be9deb"
+dependencies = [
+ "windows-implement 0.60.2",
+ "windows-interface 0.59.3",
+ "windows-link 0.2.1",
+ "windows-result 0.4.1",
+ "windows-strings 0.5.1",
+]
+
+[[package]]
+name = "windows-core"
 version = "0.100.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "803590c6856f51d15fa2e9fabe4f4703122c8737f72ef2741b4ac09d4c2192f5"
 dependencies = [
- "windows-implement",
- "windows-interface",
+ "windows-implement 0.100.0",
+ "windows-interface 0.100.0",
  "windows-link 0.100.0",
- "windows-result",
- "windows-strings",
+ "windows-result 0.100.0",
+ "windows-strings 0.100.0",
+]
+
+[[package]]
+name = "windows-implement"
+version = "0.60.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "053e2e040ab57b9dc951b72c264860db7eb3b0200ba345b4e4c3b14f67855ddf"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -3747,6 +3823,17 @@ name = "windows-implement"
 version = "0.100.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1bc1bc82e5a1b1a4d7255861b07881a0407b552f50a4d8543c0c7276fa96f6e8"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
+
+[[package]]
+name = "windows-interface"
+version = "0.59.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f316c4a2570ba26bbec722032c4099d8c8bc095efccdc15688708623367e358"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3778,11 +3865,29 @@ checksum = "9b39de7c7fe78858b0144c50c3fc000bab3be17d5e9b85b1053871693c7f7415"
 
 [[package]]
 name = "windows-result"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7781fa89eaf60850ac3d2da7af8e5242a5ea78d1a11c49bf2910bb5a73853eb5"
+dependencies = [
+ "windows-link 0.2.1",
+]
+
+[[package]]
+name = "windows-result"
 version = "0.100.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "44873a1ef61c85d5e2991db91fe656cfcf0731097e00dff1ac860f1cb3b752a0"
 dependencies = [
  "windows-link 0.100.0",
+]
+
+[[package]]
+name = "windows-strings"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7837d08f69c77cf6b07689544538e017c1bfcf57e34b4c0ff58e6c2cd3b37091"
+dependencies = [
+ "windows-link 0.2.1",
 ]
 
 [[package]]
