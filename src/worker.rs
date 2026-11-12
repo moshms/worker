@@ -434,9 +434,14 @@ async fn apply_writeback(
     let artwork = edit.artwork_data.as_deref();
     let mut libraries_to_scan = HashSet::new();
     let mut applied = 0_u64;
+    let visible = libraries::list(&state.pool)
+        .await?
+        .into_iter()
+        .map(|library| library.id)
+        .collect::<Vec<_>>();
 
     for track_id in &edit.track_ids {
-        let Some(track) = catalog::get_track(&state.pool, *track_id).await? else {
+        let Some(track) = catalog::get_track(&state.pool, *track_id, &visible).await? else {
             warn!(%track_id, "track disappeared before tag writeback");
             continue;
         };
