@@ -19,12 +19,12 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "signal
 tracing = "0.1"
 uuid = { version = "1", features = ["v7", "serde"] }
 
-mc-core = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.1.1" }
-mc-crypto = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.1.1" }
-mc-db = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.1.1" }
-mc-jobs = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.1.1" }
-mc-media = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.1.1" }
-mc-runtime = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.1.1" }
-mc-scanner = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.1.1" }
-mc-storage = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.1.1" }
-mc-telemetry = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.1.1", features = ["metrics"] }
+mc-core = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.2.0" }
+mc-crypto = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.2.0" }
+mc-db = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.2.0" }
+mc-jobs = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.2.0" }
+mc-media = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.2.0" }
+mc-runtime = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.2.0" }
+mc-scanner = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.2.0" }
+mc-storage = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.2.0" }
+mc-telemetry = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.2.0", features = ["metrics"] }
