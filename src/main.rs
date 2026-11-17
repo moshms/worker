@@ -3,6 +3,7 @@ mod probe;
 mod worker;
 
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
@@ -101,7 +102,7 @@ async fn main() -> anyhow::Result<()> {
         }
     });
 
-    let (fs_tx, mut fs_rx) = tokio::sync::mpsc::unbounded_channel();
+    let (fs_tx, mut fs_rx) = tokio::sync::mpsc::unbounded_channel::<Vec<PathBuf>>();
     let mut watchers = HashMap::new();
     worker::refresh_watchers(&state, &mut watchers, &fs_tx).await;
 
@@ -123,12 +124,16 @@ async fn main() -> anyhow::Result<()> {
             _ = watch_tick.tick() => {
                 worker::refresh_watchers(&state, &mut watchers, &fs_tx).await;
             }
-            Some(()) = fs_rx.recv() => {
+            Some(mut paths) = fs_rx.recv() => {
                 tokio::time::sleep(Duration::from_secs(2)).await;
-                while fs_rx.try_recv().is_ok() {}
+                while let Ok(more) = fs_rx.try_recv() {
+                    paths.extend(more);
+                }
 
-                if last_fs_scan.is_none_or(|last| last.elapsed() >= Duration::from_secs(10)) {
-                    worker::reload_and_scan(&state).await;
+                if !paths.is_empty()
+                    && last_fs_scan.is_none_or(|last| last.elapsed() >= Duration::from_secs(10))
+                {
+                    worker::scan_paths(&state, paths).await;
                     last_fs_scan = Some(Instant::now());
                 }
             }
