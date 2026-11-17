@@ -1,8 +1,9 @@
 use std::collections::{HashMap, HashSet};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use bytes::Bytes;
+use futures_util::StreamExt;
 use mc_core::{CoreError, Result};
 use mc_crypto::MasterKey;
 use mc_db::repos::{catalog, libraries, media_files, tag_edits, uploads};
@@ -33,7 +34,7 @@ pub struct WorkerState {
 pub async fn refresh_watchers(
     state: &WorkerState,
     watchers: &mut HashMap<Uuid, notify::RecommendedWatcher>,
-    tx: &mpsc::UnboundedSender<()>,
+    tx: &mpsc::UnboundedSender<Vec<PathBuf>>,
 ) {
     let registry = state.registry.read().await.clone();
     let active = registry
@@ -69,7 +70,7 @@ pub async fn refresh_watchers(
                             | EventKind::Modify(ModifyKind::Data(_))
                             | EventKind::Modify(ModifyKind::Name(_))
                     ) {
-                        let _ = sender.send(());
+                        let _ = sender.send(event.paths);
                     }
                 }
             }) {
@@ -87,6 +88,119 @@ pub async fn refresh_watchers(
             }
             Err(error) => {
                 warn!(library = %library.name, %error, "failed to watch library");
+            }
+        }
+    }
+}
+
+pub async fn scan_paths(state: &WorkerState, paths: Vec<PathBuf>) {
+    let registry = match StorageRegistry::load(&state.pool, state.master_key.as_ref()).await {
+        Ok(registry) => registry,
+        Err(error) => {
+            error!(%error, "failed to reload storage registry");
+            return;
+        }
+    };
+    *state.registry.write().await = registry.clone();
+
+    let mut by_library: HashMap<Uuid, HashSet<Key>> = HashMap::new();
+    let mut full = false;
+
+    for path in paths {
+        let mut matched = false;
+        for library in registry.libraries() {
+            let Some(storage) = registry.storage_for_library(library.id) else {
+                continue;
+            };
+            let Some(root) = storage.local_path(&Key::root()) else {
+                continue;
+            };
+            let Ok(relative) = path.strip_prefix(&root) else {
+                continue;
+            };
+            matched = true;
+            if relative.as_os_str().is_empty() {
+                full = true;
+                continue;
+            }
+            let Some(relative) = relative.to_str() else {
+                full = true;
+                continue;
+            };
+            let Ok(key) = Key::new(relative.replace('\\', "/")) else {
+                full = true;
+                continue;
+            };
+
+            let mut keys = HashSet::new();
+            let mut stream = storage.list(&key);
+            while let Some(item) = stream.next().await {
+                match item {
+                    Ok(entry) => {
+                        keys.insert(entry.key);
+                    }
+                    Err(mc_core::CoreError::NotFound { .. }) => {
+                        if key
+                            .as_str()
+                            .rsplit('/')
+                            .next()
+                            .is_some_and(|name| name.contains('.'))
+                        {
+                            keys.insert(key.clone());
+                        } else {
+                            full = true;
+                        }
+                        break;
+                    }
+                    Err(error) => {
+                        warn!(%error, key = %key, "failed to expand changed path");
+                        full = true;
+                        break;
+                    }
+                }
+            }
+            by_library.entry(library.id).or_default().extend(keys);
+        }
+        if !matched {
+            full = true;
+        }
+    }
+
+    if full {
+        reload_and_scan(state).await;
+        return;
+    }
+
+    for (library_id, keys) in by_library {
+        let Some(library) = registry
+            .libraries()
+            .iter()
+            .find(|library| library.id == library_id)
+        else {
+            continue;
+        };
+        let Some(storage) = registry.storage_for_library(library_id) else {
+            continue;
+        };
+        if keys.is_empty() {
+            continue;
+        }
+        match state
+            .scanner
+            .scan_library(
+                library,
+                storage,
+                ScanMode::Paths(keys.into_iter().collect()),
+            )
+            .await
+        {
+            Ok(stats) => {
+                metrics::counter!("mc_worker_scans_total", "mode" => "paths").increment(1);
+                info!(library = %library.name, ?stats, "worker path scan finished");
+            }
+            Err(error) => {
+                metrics::counter!("mc_worker_scans_total", "status" => "failed").increment(1);
+                error!(library = %library.name, %error, "worker path scan failed");
             }
         }
     }
