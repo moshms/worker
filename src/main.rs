@@ -2,6 +2,7 @@ mod config;
 mod probe;
 mod worker;
 
+use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
@@ -101,10 +102,12 @@ async fn main() -> anyhow::Result<()> {
     });
 
     let (fs_tx, mut fs_rx) = tokio::sync::mpsc::unbounded_channel();
-    let _watchers = worker::spawn_watchers(&state, fs_tx).await;
+    let mut watchers = HashMap::new();
+    worker::refresh_watchers(&state, &mut watchers, &fs_tx).await;
 
     let mut job_tick = tokio::time::interval(Duration::from_secs(2));
     let mut scan_tick = tokio::time::interval(Duration::from_secs(config.scan_interval_seconds));
+    let mut watch_tick = tokio::time::interval(Duration::from_secs(30));
     let mut last_fs_scan: Option<Instant> = None;
     let mut shutdown = Box::pin(shutdown_signal());
 
@@ -115,6 +118,10 @@ async fn main() -> anyhow::Result<()> {
             }
             _ = scan_tick.tick() => {
                 worker::reload_and_scan(&state).await;
+                worker::refresh_watchers(&state, &mut watchers, &fs_tx).await;
+            }
+            _ = watch_tick.tick() => {
+                worker::refresh_watchers(&state, &mut watchers, &fs_tx).await;
             }
             Some(()) = fs_rx.recv() => {
                 tokio::time::sleep(Duration::from_secs(2)).await;

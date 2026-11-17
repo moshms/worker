@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::sync::Arc;
 
@@ -30,14 +30,23 @@ pub struct WorkerState {
     pub config: Config,
 }
 
-pub async fn spawn_watchers(
+pub async fn refresh_watchers(
     state: &WorkerState,
-    tx: mpsc::UnboundedSender<()>,
-) -> Vec<notify::RecommendedWatcher> {
+    watchers: &mut HashMap<Uuid, notify::RecommendedWatcher>,
+    tx: &mpsc::UnboundedSender<()>,
+) {
     let registry = state.registry.read().await.clone();
-    let mut watchers = Vec::new();
+    let active = registry
+        .libraries()
+        .iter()
+        .map(|library| library.id)
+        .collect::<HashSet<_>>();
+    watchers.retain(|library_id, _| active.contains(library_id));
 
     for library in registry.libraries() {
+        if watchers.contains_key(&library.id) {
+            continue;
+        }
         let Some(storage) = registry.storage_for_library(library.id) else {
             continue;
         };
@@ -74,15 +83,13 @@ pub async fn spawn_watchers(
         match watcher.watch(&root, RecursiveMode::Recursive) {
             Ok(()) => {
                 info!(library = %library.name, root = %root.display(), "watching library");
-                watchers.push(watcher);
+                watchers.insert(library.id, watcher);
             }
             Err(error) => {
                 warn!(library = %library.name, %error, "failed to watch library");
             }
         }
     }
-
-    watchers
 }
 
 pub async fn process_jobs(state: &WorkerState) {
@@ -90,7 +97,7 @@ pub async fn process_jobs(state: &WorkerState) {
         let job = match mc_jobs::claim_one(
             &state.pool,
             &state.config.worker_id,
-            &["import", "writeback"],
+            &["import", "writeback", "scan"],
         )
         .await
         {
@@ -105,6 +112,10 @@ pub async fn process_jobs(state: &WorkerState) {
         let result = match job.kind.as_str() {
             "import" => process_import(state, &job).await,
             "writeback" => process_writeback(state, &job).await,
+            "scan" => {
+                reload_and_scan(state).await;
+                Ok(())
+            }
             other => Err(CoreError::Validation(format!(
                 "unsupported job kind: {other}"
             ))),
