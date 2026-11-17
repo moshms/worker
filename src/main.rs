@@ -82,10 +82,27 @@ async fn main() -> anyhow::Result<()> {
         .await
         .context("send initial heartbeat")?;
 
+    let heartbeat_pool = pool.clone();
+    let heartbeat_worker = config.worker_id.clone();
+    tokio::spawn(async move {
+        let mut tick = tokio::time::interval(Duration::from_secs(10));
+        loop {
+            tick.tick().await;
+            if let Err(error) = mc_jobs::heartbeat(
+                &heartbeat_pool,
+                &heartbeat_worker,
+                env!("CARGO_PKG_VERSION"),
+            )
+            .await
+            {
+                error!(%error, "failed to send heartbeat");
+            }
+        }
+    });
+
     let (fs_tx, mut fs_rx) = tokio::sync::mpsc::unbounded_channel();
     let _watchers = worker::spawn_watchers(&state, fs_tx).await;
 
-    let mut heartbeat_tick = tokio::time::interval(Duration::from_secs(10));
     let mut job_tick = tokio::time::interval(Duration::from_secs(2));
     let mut scan_tick = tokio::time::interval(Duration::from_secs(config.scan_interval_seconds));
     let mut last_fs_scan: Option<Instant> = None;
@@ -93,13 +110,6 @@ async fn main() -> anyhow::Result<()> {
 
     loop {
         tokio::select! {
-            _ = heartbeat_tick.tick() => {
-                if let Err(error) =
-                    mc_jobs::heartbeat(&pool, &config.worker_id, env!("CARGO_PKG_VERSION")).await
-                {
-                    error!(%error, "failed to send heartbeat");
-                }
-            }
             _ = job_tick.tick() => {
                 worker::process_jobs(&state).await;
             }
