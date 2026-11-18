@@ -21,13 +21,17 @@ RUN case "$TARGETARCH" in \
 COPY --from=planner /app/recipe.json recipe.json
 RUN --mount=type=ssh --mount=type=secret,id=core_token,required=false \
     if [ -f /run/secrets/core_token ]; then \
-        git config --global url."https://x-access-token:$(cat /run/secrets/core_token)@github.com/moshms/core.git".insteadOf "ssh://git@github.com/moshms/core.git"; \
+        export GIT_CONFIG_COUNT=1; \
+        export GIT_CONFIG_KEY_0="url.https://x-access-token:$(cat /run/secrets/core_token)@github.com/moshms/core.git.insteadOf"; \
+        export GIT_CONFIG_VALUE_0="ssh://git@github.com/moshms/core.git"; \
     fi && \
     cargo chef cook --release --target "$(cat /rust-target)" --recipe-path recipe.json
 COPY . .
 RUN --mount=type=ssh --mount=type=secret,id=core_token,required=false \
     if [ -f /run/secrets/core_token ]; then \
-        git config --global url."https://x-access-token:$(cat /run/secrets/core_token)@github.com/moshms/core.git".insteadOf "ssh://git@github.com/moshms/core.git"; \
+        export GIT_CONFIG_COUNT=1; \
+        export GIT_CONFIG_KEY_0="url.https://x-access-token:$(cat /run/secrets/core_token)@github.com/moshms/core.git.insteadOf"; \
+        export GIT_CONFIG_VALUE_0="ssh://git@github.com/moshms/core.git"; \
     fi && \
     cargo build --release --target "$(cat /rust-target)" -p mc-worker \
     && cp "target/$(cat /rust-target)/release/mc-worker" /mc-worker
