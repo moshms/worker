@@ -20,12 +20,12 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "signal
 tracing = "0.1"
 uuid = { version = "1", features = ["v7", "serde"] }
 
-mc-core = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.3.10" }
-mc-crypto = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.3.10" }
-mc-db = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.3.10" }
-mc-jobs = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.3.10" }
-mc-media = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.3.10" }
-mc-runtime = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.3.10" }
-mc-scanner = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.3.10" }
-mc-storage = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.3.10" }
-mc-telemetry = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.3.10", features = ["metrics"] }
+mc-core = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.3.11" }
+mc-crypto = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.3.11" }
+mc-db = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.3.11" }
+mc-jobs = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.3.11" }
+mc-media = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.3.11" }
+mc-runtime = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.3.11" }
+mc-scanner = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.3.11" }
+mc-storage = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.3.11" }
+mc-telemetry = { git = "ssh://git@github.com/moshms/core.git", tag = "v0.3.11", features = ["metrics"] }
